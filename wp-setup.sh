@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+
+
+# Provide user with the pre-requisites for running this script
 function prerequisites() {
     echo "-----------------------------------------"
     echo "----------- PRE-REQUISITES --------------"
@@ -12,9 +15,21 @@ function prerequisites() {
 }
 
 
+# If state.mc file does not exist create and load with initial value of 0
+
+$STATE_FILE = "state.mc"
+$STATE_VALUE
+if [ ! -f $STATE_FILE];
+then
+    echo " Initialising state file"
+    $STATE_VALUE = "0"
+    echo $STATE_VALUE > $STATE_FILE
+else 
+    $STATE_VALUE = `cat $STATE_FILE`
+fi
+echo " State File Content: $STATE_VALUE"
+
 clear
-
-
 
 prerequisites
 
