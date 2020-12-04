@@ -1,5 +1,20 @@
 #!/bin/bash -e
+
+function prerequisites() {
+    echo "-----------------------------------------"
+    echo "----------- PRE-REQUISITES --------------"
+    echo "-----------------------------------------"
+    echo " Installed MariaDB"
+    echo " --- Follow These Instructions: https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-ubuntu-20-04"
+    echo " Granted All Permissions to your MariaDB admin user (not root)"
+    echo " --- e.g.  if admin user is myadmin and password is mypassword"
+    echo "  GRANT ALL ON *.* TO 'myadmin'@'localhost' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;"
+}
+
+
 clear
+
+
 
 prerequisites
 
@@ -154,15 +169,3 @@ echo "Modify wp-admin.php to include correct database settings"
 
 
 echo
-
-
-function prerequisites() {
-    echo "-----------------------------------------"
-    echo "----------- PRE-REQUISITES --------------"
-    echo "-----------------------------------------"
-    echo " Installed MariaDB"
-    echo " --- Follow These Instructions: https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-ubuntu-20-04"
-    echo " Granted All Permissions to your MariaDB admin user (not root)"
-    echo " --- e.g.  if admin user is myadmin and password is mypassword"
-    echo "  GRANT ALL ON *.* TO 'myadmin'@'localhost' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;"
-}
