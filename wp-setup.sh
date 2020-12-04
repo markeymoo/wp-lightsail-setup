@@ -18,11 +18,10 @@ function prerequisites() {
 # If state.mc file does not exist create and load with initial value of 0
 
 STATE_FILE = "state.mc"
-STATE_VALUE
+STATE_VALUE = "0"
 if [ ! -f $STATE_FILE];
 then
     echo " Initialising state file"
-    $STATE_VALUE = "0"
     echo $STATE_VALUE > $STATE_FILE
 else 
     $STATE_VALUE = `cat $STATE_FILE`
