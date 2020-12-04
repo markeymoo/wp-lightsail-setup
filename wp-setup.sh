@@ -17,8 +17,8 @@ function prerequisites() {
 
 # If state.mc file does not exist create and load with initial value of 0
 
-$STATE_FILE = "state.mc"
-$STATE_VALUE
+STATE_FILE = "state.mc"
+STATE_VALUE
 if [ ! -f $STATE_FILE];
 then
     echo " Initialising state file"
