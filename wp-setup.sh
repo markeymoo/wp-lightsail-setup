@@ -1,42 +1,92 @@
 #!/bin/bash -e
-
+clear
 
 
 # Provide user with the pre-requisites for running this script
-function prerequisites() {
+function prerequisites {
+    local ENTRY_VALUE="$1"
+    local NEXT_VALUE="$2"
     echo "-----------------------------------------"
     echo "----------- PRE-REQUISITES --------------"
     echo "-----------------------------------------"
+    echo "ENTRY_VALUE: $ENTRY_VALUE"
+    echo "NEXT_VALUE: $NEXT_VALUE"
     echo " Installed MariaDB"
     echo " --- Follow These Instructions: https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-ubuntu-20-04"
     echo " Granted All Permissions to your MariaDB admin user (not root)"
     echo " --- e.g.  if admin user is myadmin and password is mypassword"
     echo "  GRANT ALL ON *.* TO 'myadmin'@'localhost' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;"
+    read -p "Press enter to continue"
+    return "$NEXT_VALUE"
 }
 
+function update_apps {
+    local ENTRY_VALUE="$1"
+    local NEXT_VALUE="$2"
+    echo "---------------------------"
+    echo "----- Beginning Setup -----"
+    echo "---------------------------"
+    read -p "Press enter to continue"
+    sudo apt update
+    return "$NEXT_VALUE"
+}
 
 # If state.mc file does not exist create and load with initial value of 0
-
 STATE_FILE="/home/ubuntu/state.mc"
-STATE_VALUE="0"
+ENTRY_STATE="0"
 if [ ! -f $STATE_FILE ];
 then
     echo " Initialising state file : $STATE_FILE"
     touch $STATE_FILE 
-    echo $STATE_VALUE > $STATE_FILE
+    echo $ENTRY_STATE > $STATE_FILE
 else 
-    $STATE_VALUE = `cat $STATE_FILE`
+    ENTRY_STATE=`cat $STATE_FILE`
 fi
-echo " State File Content: $STATE_VALUE"
+echo " State File Content: $ENTRY_STATE"
 
-clear
 
-prerequisites
+# Run the state machine, exit if the state entry is equal to existing state
+# or 99 which represents completion.
+EXIT_FLAG="0"
+until [ $EXIT_FLAG = 1 ]; do
+    echo "EXIT_FLAG: $EXIT_FLAG"
+    if [ $EXIT_FLAG = 0 ];
+    then
+        echo "----- STATE RUN -----"
+        echo "ENTRY_STATE: $ENTRY_STATE"
+        NEW_STATE="$ENTRY_STATE"
+        case $ENTRY_STATE in
+            "0")
+                prerequisites "0" "1"
+                NEW_STATE=$?
+                ;;
+            "1")
+                update_apps "1" "2"
+                NEW_STATE=$?
+                ;;
+            *)
+                NEW_STATE="99"
+                ;;
+        esac
 
-echo "-----------------------------------------"
-echo "----- Beginning Setup -----"
-echo "-----------------------------------------"
-sudo apt update
+        echo "NEW_STATE: $NEW_STATE"
+        if [ "$NEW_STATE" = "$ENTRY_STATE" ] || [ "$NEW_STATE" = 99 ]
+        then
+            echo $NEW_STATE > $STATE_FILE
+            echo "EXITING LOOP - NEW_STATE eq ENTRY_STATE"
+            EXIT_FLAG="1"
+        else
+            ENTRY_STATE=$NEW_STATE
+            echo $ENTRY_STATE > $STATE_FILE
+            echo "ENTRY_STATE: $ENTRY_STATE"
+        fi
+    fi
+
+done
+
+exit
+
+
 echo "------------------------------------------"
 echo "-----  Apache Installation and Setup -----"
 echo " Check if apache2 is installed"
