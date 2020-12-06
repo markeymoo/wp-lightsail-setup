@@ -9,8 +9,6 @@ function prerequisites {
     echo "-----------------------------------------"
     echo "----------- PRE-REQUISITES --------------"
     echo "-----------------------------------------"
-    echo "ENTRY_VALUE: $ENTRY_VALUE"
-    echo "NEXT_VALUE: $NEXT_VALUE"
     echo " Installed MariaDB"
     echo " --- Follow These Instructions: https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-ubuntu-20-04"
     echo " Granted All Permissions to your MariaDB admin user (not root)"
@@ -23,13 +21,30 @@ function prerequisites {
 function update_apps {
     local ENTRY_VALUE="$1"
     local NEXT_VALUE="$2"
-    echo "---------------------------"
-    echo "----- Beginning Setup -----"
-    echo "---------------------------"
-    read -p "Press enter to continue"
+    echo "--------------------------------"
+    echo "----- Updating App Library -----"
+    echo "--------------------------------"
     sudo apt update
     return "$NEXT_VALUE"
 }
+
+function apache2_install {
+    local ENTRY_VALUE="$1"
+    local NEXT_VALUE="$2"
+    echo "------------------------------------------"
+    echo "-----  Apache Installation and Setup -----"
+    if [ $(dpkg-query -s -f='$(Status)' apache2 2>/dev/null | grep -c "ok installed") -eq 0 ];
+    then
+        echo "Installing"
+        sudo apt -y install apache2
+        ufw allow in "Apache"
+    else
+        echo -e "${GREEN}Already installed!${NC}"
+    fi
+
+    return "$NEXT_VALUE"
+}
+
 
 # If state.mc file does not exist create and load with initial value of 0
 STATE_FILE="/home/ubuntu/state.mc"
@@ -64,6 +79,10 @@ until [ $EXIT_FLAG = 1 ]; do
                 update_apps "1" "2"
                 NEW_STATE=$?
                 ;;
+            "2")
+                apache2_install "2" "3"
+                NEW_STATE=$?
+                ;;
             *)
                 NEW_STATE="99"
                 ;;
@@ -87,17 +106,7 @@ done
 exit
 
 
-echo "------------------------------------------"
-echo "-----  Apache Installation and Setup -----"
-echo " Check if apache2 is installed"
-if [ $(dpkg-query -s -f='$(Status)' apache2 2>/dev/null | grep -c "ok installed") -eq 0 ];
-then
-    echo "Installing apache2"
-    sudo apt -y install apache2
-    ufw allow in "Apache"
-else
-    echo -e "${GREEN}apache2 is installed!${NC}"
-fi
+
 
 
 echo "-----  PHP Installation and Setup -----"
