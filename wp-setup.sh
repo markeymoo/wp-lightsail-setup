@@ -14,7 +14,8 @@ prerequisites() {
     echo " Granted All Permissions to your MariaDB admin user (not root)"
     echo " --- e.g.  if admin user is myadmin and password is mypassword"
     echo "  GRANT ALL ON *.* TO 'myadmin'@'localhost' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;"
-    read -p "Press enter to continue" dummy
+    echo " ----------------------------------------"
+    echo " !!! ENSURE YOU HAVE ALREADY REDIRECTED YOUR DOMAINNAME TO THE PUBLIC STATIC IP OF YOUR NEW INSTANCE !!!"
     FUNCTION_RESULT=$NEXT_VALUE
 }
 
@@ -146,8 +147,8 @@ install_latest_wordpress() {
 
     echo "----- Change wordpress vhost document directory permissions -----"
     sudo chown -R www-data:www-data /var/www/$domainname
-    sudo find /var/www/$domainname/ -type d -exec chmod 750 {} \;
-    sudo find /var/www/$domainname/ -type f -exec chmod 640 {} \;
+    sudo find /var/www/$domainname/ -type d -exec chmod 755 {} \;
+    sudo find /var/www/$domainname/ -type f -exec chmod 644 {} \;
 
     echo "----- Obtain new secret values needed by Wordpress to be more secure -----"
     SALT=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
@@ -277,6 +278,8 @@ until [ $EXIT_FLAG = 1 ]; do
         esac
 
         echo "NEW_STATE: $NEW_STATE"
+        read -p "Press enter to continue" dummy
+
         if [ "$NEW_STATE" = "$ENTRY_STATE" ] || [ "$NEW_STATE" = 99 ]
         then
             echo $NEW_STATE > $STATE_FILE
