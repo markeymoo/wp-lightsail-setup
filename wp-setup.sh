@@ -203,13 +203,13 @@ EOF
 
     echo "Modify wp-admin.php to include correct database settings : wp-config.php"
     STRING='database_name_here'
-    sudo printf '%s\n' "g/$STRING/d" a "$dbname" . w | ed -s /var/www/$domainname/wp-config.php
+    sudo sed -i -e "s/$STRING/$dbname/g" /var/www/$domainname/wp-config.php
     STRING='username_here'
-    sudo printf '%s\n' "g/$STRING/d" a "$dbuser" . w | ed -s /var/www/$domainname/wp-config.php
+    sudo sed -i -e "s/$STRING/$dbuser/g" /var/www/$domainname/wp-config.php
     STRING='password_here'
-    sudo printf '%s\n' "g/$STRING/d" a "$dbpass" . w | ed -s /var/www/$domainname/wp-config.php
+    sudo sed -i -e "s/$STRING/$dbpass/g" /var/www/$domainname/wp-config.php
     STRING='localhost'
-    sudo printf '%s\n' "g/$STRING/d" a "$dbhost" . w | ed -s /var/www/$domainname/wp-config.php
+    sudo sed -i -e "s/$STRING/$dbhost/g" /var/www/$domainname/wp-config.php
 
     if ! grep -Fxq "define( 'FS_METHOD', 'direct' );" /var/www/$domainname/wp-config.php
     then
