@@ -212,7 +212,7 @@ EOF
 
     if ! grep -Fxq "define( 'FS_METHOD', 'direct' );" /var/www/$domainname/wp-config.php
     then
-        sudo cat "define( 'FS_METHOD', 'direct' );" >> /var/www/$domainname/wp-config.php
+        sudo echo "define( 'FS_METHOD', 'direct' );" >> /var/www/$domainname/wp-config.php
     fi
     
     FUNCTION_RESULT=$NEXT_VALUE
