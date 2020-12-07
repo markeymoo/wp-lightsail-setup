@@ -219,6 +219,22 @@ EOF
     FUNCTION_RESULT=$NEXT_VALUE
 }
 
+install_certbot() {
+    local ENTRY_VALUE="$1"
+    local NEXT_VALUE="$2"
+    echo "-----  Install Certbot -----"
+    
+    if [ $(dpkg-query -s -f='$(Status)' certbot 2>/dev/null | grep -c "ok installed") -eq 0 ];
+    then
+        echo "Installing php + mods"
+        sudo apt -y install certbot python3-certbot-apache
+    else
+        echo -e "${GREEN}certbot is installed!${NC}"
+    fi
+
+    FUNCTION_RESULT=$NEXT_VALUE
+}
+
 # If state.mc file does not exist create and load with initial value of 0
 STATE_FILE="/home/ubuntu/state.mc"
 ENTRY_STATE=1
@@ -270,6 +286,10 @@ until [ $EXIT_FLAG = 1 ]; do
                 ;;
             7)
                 configure_wordpress_database 7 8
+                NEW_STATE=$FUNCTION_RESULT
+                ;;
+            8)
+                install_certbot 8 9
                 NEW_STATE=$FUNCTION_RESULT
                 ;;
             *)
