@@ -146,7 +146,7 @@ install_latest_wordpress() {
     sudo cp -a /tmp/wordpress/. /var/www/$domainname
 
     echo "----- Change wordpress vhost document directory permissions -----"
-    sudo chown -R www-data:www-data /var/www/$domainname
+    sudo chown www-data:www-data /var/www/$domainname
     sudo find /var/www/$domainname/ -type d -exec chmod 755 {} \;
     sudo find /var/www/$domainname/ -type f -exec chmod 644 {} \;
 
