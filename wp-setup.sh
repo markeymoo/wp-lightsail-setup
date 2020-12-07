@@ -210,7 +210,7 @@ EOF
     STRING='localhost'
     sudo printf '%s\n' "g/$STRING/d" a "$dbhost" . w | ed -s /var/www/$domainname/wp-config.php
 
-    if [ ! grep -Fxq "define( 'FS_METHOD', 'direct' );" /var/www/$domainname/wp-config.php ];
+    if ! grep -Fxq "define( 'FS_METHOD', 'direct' );" /var/www/$domainname/wp-config.php
     then
         sudo cat "define( 'FS_METHOD', 'direct' );" >> /var/www/$domainname/wp-config.php
     fi
