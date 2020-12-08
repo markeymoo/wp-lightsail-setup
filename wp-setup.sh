@@ -246,7 +246,7 @@ install_certbot() {
         echo -e "${GREEN}certbot is installed!${NC}"
     fi
 
-    certbot --apache --non-interactive --agree-tos -m $webmaster -d $domainname -d www.$domainname
+    certbot --apache --non-interactive --agree-tos --redirect -m $webmaster -d $domainname -d www.$domainname
 
     FUNCTION_RESULT=$NEXT_VALUE
 }
