@@ -65,8 +65,6 @@ php_install() {
 configure_apache_vhost() {
     local ENTRY_VALUE="$1"
     local NEXT_VALUE="$2"
-    echo "----- Get Site Information -----"
-    read -p "Domain Name (without www.): " domainname
 
     echo "----- Create Apache2 vhost if needed and set permissions -----"
     if [ ! -d "/var/www/$domainname" ];
@@ -97,6 +95,7 @@ configure_apache_vhost() {
         <Directory /var/www/$domainname>
             AllowOverride All
         </Directory>
+        Protocols h2 http/1.1
     </VirtualHost>
 EOF
 
@@ -108,6 +107,20 @@ EOF
 
     echo "----- Enable the apache mod_rewrite mod to allow wordpress permalink -----"
     sudo a2enmod rewrite
+
+    echo "----- Enable the apache https mod to allow http/2 serving -----"
+    sudo a2enmod http2
+
+    echo "----- Disable php7.4 and mpm_prefork apache mod -----"
+    sudo a2dismod php7.4
+    sudo a2dismod mpm_prefork
+    sudo a2enmod mpm_event proxy_fcgi setenvif
+
+    echo "----- Install php-fpm -----"
+    sudo apt install php7.4-fpm
+    sudo systemctl start php7.4-fpm
+    sudo systemctl enable php7.4-fpm
+    sudo a2enconf php7.4-fpm
 
     echo "----- Verify that the vhost configuration is good -----"
     sudo apache2ctl configtest
@@ -249,6 +262,9 @@ fi
 echo " State File Content: $ENTRY_STATE"
 
 
+echo "----- Get Site Information -----"
+read -p "Domain Name (without www.): " domainname
+
 # Run the state machine, exit if the state entry is equal to existing state
 # or 99 which represents completion.
 EXIT_FLAG=0
@@ -292,6 +308,8 @@ until [ $EXIT_FLAG = 1 ]; do
                 install_certbot 8 9
                 NEW_STATE=$FUNCTION_RESULT
                 ;;
+            9)
+
             *)
                 NEW_STATE=99
                 ;;
