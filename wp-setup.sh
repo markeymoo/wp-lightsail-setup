@@ -209,7 +209,7 @@ configure_wordpress_database() {
 
     sudo mysql -u $dbadmin -p$dbadminpw <<EOF
     CREATE USER '$dbuser'@'$dbhost' IDENTIFIED BY '$dbpass';
-    CREATE DATABASE $dbname DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;;
+    CREATE DATABASE $dbname DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
     GRANT ALL PRIVILEGES ON $dbname.* TO '$dbuser'@'$dbhost';
     FLUSH PRIVILEGES;
 EOF
@@ -236,6 +236,7 @@ install_certbot() {
     local ENTRY_VALUE="$1"
     local NEXT_VALUE="$2"
     echo "-----  Install Certbot -----"
+    read -p "Enter webmaster email: " webmaster
     
     if [ $(dpkg-query -s -f='$(Status)' certbot 2>/dev/null | grep -c "ok installed") -eq 0 ];
     then
@@ -244,6 +245,8 @@ install_certbot() {
     else
         echo -e "${GREEN}certbot is installed!${NC}"
     fi
+
+    certbot --apache --non-interactive --agree-tos -m $webmaster -d $domainname -d www.$domainname
 
     FUNCTION_RESULT=$NEXT_VALUE
 }
@@ -308,8 +311,6 @@ until [ $EXIT_FLAG = 1 ]; do
                 install_certbot 8 9
                 NEW_STATE=$FUNCTION_RESULT
                 ;;
-            9)
-
             *)
                 NEW_STATE=99
                 ;;
