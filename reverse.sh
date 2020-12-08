@@ -26,5 +26,4 @@ echo "----------------------------------"
 echo "------- Remove WordPress  ------"
 sudo rm -r /var/www/$domainname
 sudo apt remove apache2 php libapache2-mod-php php-mysql php7.4-fpm certbot python3-certbot
--apache
-rm /home/ubuntu/state.mc
+sudo rm /home/ubuntu/state.mc
