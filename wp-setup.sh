@@ -207,7 +207,7 @@ configure_wordpress_database() {
 
     echo "Creating user, database within MariaDB and setting permissions"
 
-    sudo mysql -u $dbadmin -p$dbadminpw <<EOF
+    sudo mysql -u $dbadmin -p$dbadminpw -h $dbhost <<EOF
     CREATE USER '$dbuser'@'$dbhost' IDENTIFIED BY '$dbpass';
     CREATE DATABASE $dbname DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
     GRANT ALL PRIVILEGES ON $dbname.* TO '$dbuser'@'$dbhost';
