@@ -3,6 +3,7 @@ clear
 
 echo "----- Obtain Parameters -----"
 read -p "Domain: " domainname
+read -p "Wordpress/Apache Host IP: " hostip
 read -p "DB Host: " dbhost
 read -p "DB Admin User: " dbadmin
 read -p "DB Admin User Password: " dbadminpw
@@ -198,9 +199,9 @@ configure_wordpress_database() {
     echo "Creating user, database within MariaDB and setting permissions"
 
     sudo mysql -u $dbadmin -p"$dbadminpw" -h $dbhost <<EOF
-    CREATE USER '$dbuser'@'$dbhost' IDENTIFIED BY '$dbpass';
+    CREATE USER '$dbuser'@'$hostip' IDENTIFIED BY '$dbpass';
     CREATE DATABASE $dbname DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-    GRANT ALL PRIVILEGES ON $dbname.* TO '$dbuser'@'$dbhost';
+    GRANT ALL PRIVILEGES ON $dbname.* TO '$dbuser'@'$hostip';
     FLUSH PRIVILEGES;
 EOF
 
