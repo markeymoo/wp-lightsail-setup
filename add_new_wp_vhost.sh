@@ -267,6 +267,7 @@ until [ $EXIT_FLAG = 1 ]; do
         NEW_STATE="$ENTRY_STATE"
         case $ENTRY_STATE in
             1)
+                NEW_STATE=2
                 ;;
             2)
                 update_apps 2 3
