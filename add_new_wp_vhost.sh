@@ -8,7 +8,7 @@ read -p "DB Admin User: " dbadmin
 read -p "DB Admin User Password: " dbadminpw
 read -p "New DB Name: " dbname
 read -p "New DB User: " dbuser
-read -p "New DB User Password: " dbuserpw
+read -p "New DB User Password: " dbpass
 
 echo "These Are The Values Provided"
 echo "Domain: " $domainname
@@ -17,7 +17,7 @@ echo "DB Admin User: " $dbadmin
 echo "DB Admin User Password: " $dbadminpw
 echo "New DB Name: " $dbname
 echo "New DB User: " $dbuser
-echo "New DB User Password: " $dbuserpw
+echo "New DB User Password: " $dbpass
 
 read -p "Are These Correct, y/n : " dbconfirm
 
@@ -254,9 +254,6 @@ else
 fi
 echo " State File Content: $ENTRY_STATE"
 
-
-echo "----- Get Site Information -----"
-read -p "Domain Name (without www.): " domainname
 
 # Run the state machine, exit if the state entry is equal to existing state
 # or 99 which represents completion.
