@@ -1,20 +1,46 @@
 #!/bin/bash -e
 clear
 
+echo "----- Obtain Parameters -----"
+read -p "Domain: " domainname
+read -p "Wordpress/Apache Host IP: " hostip
+read -p "DB Host: " dbhost
+read -p "DB Admin User: " dbadmin
+read -p "DB Admin User Password: " dbadminpw
+read -p "New DB Name: " dbname
+read -p "New DB User: " dbuser
+read -p "New DB User Password: " dbpass
+
+echo "These Are The Values Provided"
+echo "Domain: " $domainname
+echo "DB Host: " $dbhost
+echo "DB Admin User: " $dbadmin
+echo "DB Admin User Password: " $dbadminpw
+echo "New DB Name: " $dbname
+echo "New DB User: " $dbuser
+echo "New DB User Password: " $dbpass
+
+read -p "Are These Correct, y/n : " dbconfirm
+
+if [ $dbconfirm != y ]
+then
+    echo "exiting"
+    exit
+fi
 
 # Provide user with the pre-requisites for running this script
 prerequisites() {
     local ENTRY_VALUE=$1
     local NEXT_VALUE=$2
-    echo "-----------------------------------------"
-    echo "----------- PRE-REQUISITES --------------"
-    echo "-----------------------------------------"
+    echo "----------------------------------------------------------------------------------------"
+    echo "----------- PRE-REQUISITES : IF YOU ARE USING A MANAGED DB SERVICE IGNORE --------------"
+    echo "----------------------------------------------------------------------------------------"
     echo " Installed MariaDB"
     echo " --- Follow These Instructions: https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-ubuntu-20-04"
     echo " Granted All Permissions to your MariaDB admin user (not root)"
     echo " --- e.g.  if admin user is myadmin and password is mypassword"
     echo "  GRANT ALL ON *.* TO 'myadmin'@'localhost' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;"
-    echo " ----------------------------------------"
+    echo " ---------------------------------------------------------------------------------------"
     echo " !!! ENSURE YOU HAVE ALREADY REDIRECTED YOUR DOMAINNAME TO THE PUBLIC STATIC IP OF YOUR NEW INSTANCE !!!"
     FUNCTION_RESULT=$NEXT_VALUE
 }
@@ -127,6 +153,7 @@ EOF
     else
         echo -e "${GREEN}Already installed!${NC}"
     fi
+
     echo "----- Verify that the vhost configuration is good -----"
     sudo apache2ctl configtest
 
@@ -164,7 +191,7 @@ install_latest_wordpress() {
     sudo cp -a /tmp/wordpress/. /var/www/$domainname
 
     echo "----- Change wordpress vhost document directory permissions -----"
-    sudo chown www-data:www-data /var/www/$domainname
+    sudo chown -R www-data:www-data /var/www/$domainname
     sudo find /var/www/$domainname/ -type d -exec chmod 755 {} \;
     sudo find /var/www/$domainname/ -type f -exec chmod 644 {} \;
 
@@ -199,6 +226,9 @@ configure_php_vhost_settings() {
     max_execution_time = 300
 EOF
 
+    sudo service php7.4-fpm reload
+    sudo service apache2 restart
+
     echo "------- CONFIGURE PHP VHOST FILE/POST UPLOAD SIZES - END -------"
     echo "-----------------------------------------------------------------"
     FUNCTION_RESULT=$NEXT_VALUE
@@ -207,7 +237,6 @@ EOF
 configure_wordpress_database() {
     local ENTRY_VALUE="$1"
     local NEXT_VALUE="$2"
-
 
     echo "Creating user, database within MariaDB and setting permissions"
 

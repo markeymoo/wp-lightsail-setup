@@ -28,7 +28,22 @@ then
     exit
 fi
 
-
+# Provide user with the pre-requisites for running this script
+prerequisites() {
+    local ENTRY_VALUE=$1
+    local NEXT_VALUE=$2
+    echo "----------------------------------------------------------------------------------------"
+    echo "----------- PRE-REQUISITES : IF YOU ARE USING A MANAGED DB SERVICE IGNORE --------------"
+    echo "----------------------------------------------------------------------------------------"
+    echo " Installed MariaDB"
+    echo " --- Follow These Instructions: https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-ubuntu-20-04"
+    echo " Granted All Permissions to your MariaDB admin user (not root)"
+    echo " --- e.g.  if admin user is myadmin and password is mypassword"
+    echo "  GRANT ALL ON *.* TO 'myadmin'@'localhost' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;"
+    echo " ---------------------------------------------------------------------------------------"
+    echo " !!! ENSURE YOU HAVE ALREADY REDIRECTED YOUR DOMAINNAME TO THE PUBLIC STATIC IP OF YOUR NEW INSTANCE !!!"
+    FUNCTION_RESULT=$NEXT_VALUE
+}
 
 update_apps() {
     local ENTRY_VALUE="$1"
@@ -211,6 +226,9 @@ configure_php_vhost_settings() {
     max_execution_time = 300
 EOF
 
+    sudo service php7.4-fpm reload
+    sudo service apache2 restart
+
     echo "------- CONFIGURE PHP VHOST FILE/POST UPLOAD SIZES - END -------"
     echo "-----------------------------------------------------------------"
     FUNCTION_RESULT=$NEXT_VALUE
@@ -292,7 +310,8 @@ until [ $EXIT_FLAG = 1 ]; do
         NEW_STATE="$ENTRY_STATE"
         case $ENTRY_STATE in
             1)
-                NEW_STATE=2
+                prerequisites 1 2
+                NEW_STATE=$FUNCTION_RESULT
                 ;;
             2)
                 update_apps 2 3
