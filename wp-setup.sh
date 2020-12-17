@@ -117,11 +117,16 @@ EOF
     sudo a2enmod mpm_event proxy_fcgi setenvif
 
     echo "----- Install php-fpm -----"
-    sudo apt install php7.4-fpm
-    sudo systemctl start php7.4-fpm
-    sudo systemctl enable php7.4-fpm
-    sudo a2enconf php7.4-fpm
-
+    if [ $(dpkg-query -s -f='$(Status)' php7.4-fpm 2>/dev/null | grep -c "ok installed") -eq 0 ];
+    then
+        echo "Installing"
+        sudo apt -y install php7.4-fpm
+        sudo systemctl start php7.4-fpm
+        sudo systemctl enable php7.4-fpm
+        sudo a2enconf php7.4-fpm
+    else
+        echo -e "${GREEN}Already installed!${NC}"
+    fi
     echo "----- Verify that the vhost configuration is good -----"
     sudo apache2ctl configtest
 
@@ -175,42 +180,41 @@ install_latest_wordpress() {
     FUNCTION_RESULT=$NEXT_VALUE
 }
 
+configure_php_vhost_settings() {
+    local ENTRY_VALUE="$1"
+    local NEXT_VALUE="$2"
+    echo "------------------------------------------------------------------"
+    echo "------- CONFIGURE PHP VHOST FILE/POST UPLOAD SIZES - START -------"
+    echo "        --------------------------------------------------"
+
+    if [ -f /var/www/$domainname/.user.ini ];
+    then
+        echo "Removing file /var/www/$domainname/.user.ini"
+        sudo rm -f /var/www/$domainname/.user.ini
+    fi
+
+    sudo cat >/var/www/$domainname/.user.ini <<EOF
+    upload_max_filesize=20M
+    post_max_size = 21M
+    max_execution_time = 300
+EOF
+
+    echo "------- CONFIGURE PHP VHOST FILE/POST UPLOAD SIZES - END -------"
+    echo "-----------------------------------------------------------------"
+    FUNCTION_RESULT=$NEXT_VALUE
+}
+
 configure_wordpress_database() {
     local ENTRY_VALUE="$1"
     local NEXT_VALUE="$2"
 
-    echo "----------------------------------------------------------"
-    echo "------- Configure MariaDB and Wordpress Connection -------"
-    echo "        ------------------------------------------"
-    echo "Get information for new database (assume it to be on localhost)"
-    echo "Each database will have a seperate db user created utilised by wordpress"
-    read -p "Database Host: " dbhost
-    read -p "Database Admin Username: " dbadmin
-    read -p "Database Admin Password: " dbadminpw
-    read -p "Database Name: " dbname
-    read -p "Database User: " dbuser
-    read -p "Database User Password: " dbpass
-    echo
-    echo "Your inputs were;"
-    echo "Database Host = " $dbhost
-    echo "Database Admin Username: " $dbadmin
-    echo "Database Admin Password: " $dbadminpw
-    echo "Database Name = " $dbname
-    echo "Database User = " $dbuser
-    echo "Database User Password = " $dbpass
-    read -p "Are These Correct, y/n : " dbconfirm
-    if [ $dbconfirm != y ]
-    then
-        echo "exiting"
-        exit
-    fi
 
     echo "Creating user, database within MariaDB and setting permissions"
 
-    sudo mysql -u $dbadmin -p$dbadminpw -h $dbhost <<EOF
-    CREATE USER '$dbuser'@'$dbhost' IDENTIFIED BY '$dbpass';
+    sudo mysql -u $dbadmin -p"$dbadminpw" -h $dbhost <<EOF
+    CREATE USER '$dbuser'@'$hostip' IDENTIFIED BY '$dbpass';
     CREATE DATABASE $dbname DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-    GRANT ALL PRIVILEGES ON $dbname.* TO '$dbuser'@'$dbhost';
+    GRANT ALL PRIVILEGES ON $dbname.* TO '$dbuser'@'$hostip';
     FLUSH PRIVILEGES;
 EOF
 
@@ -265,9 +269,6 @@ fi
 echo " State File Content: $ENTRY_STATE"
 
 
-echo "----- Get Site Information -----"
-read -p "Domain Name (without www.): " domainname
-
 # Run the state machine, exit if the state entry is equal to existing state
 # or 99 which represents completion.
 EXIT_FLAG=0
@@ -308,7 +309,11 @@ until [ $EXIT_FLAG = 1 ]; do
                 NEW_STATE=$FUNCTION_RESULT
                 ;;
             8)
-                install_certbot 8 9
+                configure_wordpress_database 8 9
+                NEW_STATE=$FUNCTION_RESULT
+                ;;
+            9)
+                install_certbot 9 10
                 NEW_STATE=$FUNCTION_RESULT
                 ;;
             *)
