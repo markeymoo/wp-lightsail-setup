@@ -176,7 +176,7 @@ install_latest_wordpress() {
     sudo cp -a /tmp/wordpress/. /var/www/$domainname
 
     echo "----- Change wordpress vhost document directory permissions -----"
-    sudo chown www-data:www-data /var/www/$domainname
+    sudo chown -R www-data:www-data /var/www/$domainname
     sudo find /var/www/$domainname/ -type d -exec chmod 755 {} \;
     sudo find /var/www/$domainname/ -type f -exec chmod 644 {} \;
 
@@ -189,6 +189,30 @@ install_latest_wordpress() {
 
     echo "------- DOWNLOAD, READY LATEST WORDPRESS DISTRIBUTION - END -------"
     echo "-------------------------------------------------------------------"
+    FUNCTION_RESULT=$NEXT_VALUE
+}
+
+configure_php_vhost_settings() {
+    local ENTRY_VALUE="$1"
+    local NEXT_VALUE="$2"
+    echo "------------------------------------------------------------------"
+    echo "------- CONFIGURE PHP VHOST FILE/POST UPLOAD SIZES - START -------"
+    echo "        --------------------------------------------------"
+
+    if [ -f /var/www/$domainname/.user.ini ];
+    then
+        echo "Removing file /var/www/$domainname/.user.ini"
+        sudo rm -f /var/www/$domainname/.user.ini
+    fi
+
+    sudo cat >/var/www/$domainname/.user.ini <<EOF
+    upload_max_filesize=20M
+    post_max_size = 21M
+    max_execution_time = 300
+EOF
+
+    echo "------- CONFIGURE PHP VHOST FILE/POST UPLOAD SIZES - END -------"
+    echo "-----------------------------------------------------------------"
     FUNCTION_RESULT=$NEXT_VALUE
 }
 
@@ -295,7 +319,11 @@ until [ $EXIT_FLAG = 1 ]; do
                 NEW_STATE=$FUNCTION_RESULT
                 ;;
             8)
-                install_certbot 8 9
+                configure_wordpress_database 8 9
+                NEW_STATE=$FUNCTION_RESULT
+                ;;
+            9)
+                install_certbot 9 10
                 NEW_STATE=$FUNCTION_RESULT
                 ;;
             *)
