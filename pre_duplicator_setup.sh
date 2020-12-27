@@ -200,7 +200,7 @@ configure_wordpress_database() {
     if [ $(dpkg-query -s -f='$(Status)' mysql-client 2>/dev/null | grep -c "ok installed") -eq 0 ];
     then
         echo "Installing"
-        sudo apt -y install mysql
+        sudo apt -y install mysql-client
     else
         echo -e "${GREEN}mysql Already installed!${NC}"
     fi
