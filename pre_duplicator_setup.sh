@@ -3,7 +3,7 @@ clear
 
 echo "----- Obtain Parameters -----"
 read -p "Domain: " domainname
-read -p "Wordpress/Apache Host IP: " hostip
+read -p "Wordpress/Apache Host IP (private IP of instance): " hostip
 read -p "DB Host: " dbhost
 read -p "DB Admin User: " dbadmin
 read -p "DB Admin User Password: " dbadminpw
@@ -165,48 +165,6 @@ EOF
     FUNCTION_RESULT=$NEXT_VALUE
 }
 
-install_latest_wordpress() {
-    local ENTRY_VALUE="$1"
-    local NEXT_VALUE="$2"
-    echo "---------------------------------------------------------------------"
-    echo "------- DOWNLOAD, READY LATEST WORDPRESS DISTRIBUTION - START -------"
-    echo "        -----------------------------------------------------"
-    cd /tmp
-    curl -O https://wordpress.org/latest.tar.gz
-
-    echo "----- Delete /tmp/wordpress if already exists"
-    if [ -d "/tmp/wordpress" ];
-    then
-        echo "Deleting /tmp/wordpress"
-        sudo rm -rf /tmp/wordpress
-    fi
-
-    echo "----- Unzip latest.tar.gz -----"
-    tar xzvf latest.tar.gz
-    touch /tmp/wordpress/.htaccess
-    cp /tmp/wordpress/wp-config-sample.php /tmp/wordpress/wp-config.php
-    mkdir /tmp/wordpress/wp-content/upgrade
-
-    echo "----- Copy wordpress files into the vhost directory -----"
-    sudo cp -a /tmp/wordpress/. /var/www/$domainname
-
-    echo "----- Change wordpress vhost document directory permissions -----"
-    sudo chown -R www-data:www-data /var/www/$domainname
-    sudo find /var/www/$domainname/ -type d -exec chmod 755 {} \;
-    sudo find /var/www/$domainname/ -type f -exec chmod 644 {} \;
-
-    echo "----- Obtain new secret values needed by Wordpress to be more secure -----"
-    SALT=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
-
-    echo "----- Write salts into vhost wp-config.php -----"
-    STRING='put your unique phrase here'
-    sudo printf '%s\n' "g/$STRING/d" a "$SALT" . w | ed -s /var/www/$domainname/wp-config.php
-
-    echo "------- DOWNLOAD, READY LATEST WORDPRESS DISTRIBUTION - END -------"
-    echo "-------------------------------------------------------------------"
-    FUNCTION_RESULT=$NEXT_VALUE
-}
-
 configure_php_vhost_settings() {
     local ENTRY_VALUE="$1"
     local NEXT_VALUE="$2"
@@ -237,6 +195,15 @@ EOF
 configure_wordpress_database() {
     local ENTRY_VALUE="$1"
     local NEXT_VALUE="$2"
+
+    echo "install mysql cli if required"
+    if [ $(dpkg-query -s -f='$(Status)' mysql 2>/dev/null | grep -c "ok installed") -eq 0 ];
+    then
+        echo "Installing"
+        sudo apt -y install mysql
+    else
+        echo -e "${GREEN}mysql Already installed!${NC}"
+    fi
 
     echo "Creating user, database within MariaDB and setting permissions"
 
