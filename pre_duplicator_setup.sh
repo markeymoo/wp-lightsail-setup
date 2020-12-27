@@ -197,7 +197,7 @@ configure_wordpress_database() {
     local NEXT_VALUE="$2"
 
     echo "install mysql cli if required"
-    if [ $(dpkg-query -s -f='$(Status)' mysql 2>/dev/null | grep -c "ok installed") -eq 0 ];
+    if [ $(dpkg-query -s -f='$(Status)' mysql-client 2>/dev/null | grep -c "ok installed") -eq 0 ];
     then
         echo "Installing"
         sudo apt -y install mysql
