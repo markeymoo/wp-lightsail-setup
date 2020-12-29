@@ -85,6 +85,14 @@ php_install() {
         echo -e "${GREEN}php is installed!${NC}"
     fi
 
+    if [ $(dpkg-query -s -f='$(Status)' php7.4-zip 2>/dev/null | grep -c "ok installed") -eq 0 ];
+    then
+        echo "Installing php7.4-zip"
+        sudo apt -y install php7.4-zip
+    else
+        echo -e "${GREEN}php7.4-zip is installed!${NC}"
+    fiß
+
     FUNCTION_RESULT=$NEXT_VALUE
 }
 
